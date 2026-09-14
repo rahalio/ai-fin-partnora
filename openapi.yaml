@@ -1,0 +1,678 @@
+openapi: 3.0.3
+info:
+  title: Partnora
+  version: 0.1.0
+  description: >-
+    India banking partnership OS for payments banks, fintechs, BCs and inclusion deals under RBI postures.
+  x-product-slug: ai-fin-partnora
+  x-source: ai-in-financial/deloitte-in-fs-deloitte-banking-colloquium-thoughtpaper-cii/
+servers:
+  - url: https://api.example.com
+tags:
+  - name: Partners
+    description: Partner registry and regulatory postures
+  - name: Opportunities
+    description: Partnership pipeline
+  - name: Deals
+    description: Commercial deal workspace
+  - name: Gates
+    description: Compliance launch gates
+  - name: Channels
+    description: Last-mile channel performance
+  - name: Conflicts
+    description: Coopetition conflict register
+  - name: Economics
+    description: Unit economics snapshots
+  - name: Audits
+    description: Audit exports
+paths:
+  /v1/partners:
+    get:
+      operationId: listPartnoraPartners
+      tags: [Partners]
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopePartner"
+    post:
+      operationId: createPartnoraPartner
+      tags: [Partners]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartnerCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopePartner"
+  /v1/opportunities:
+    get:
+      operationId: listOpportunities
+      tags: [Opportunities]
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeOpportunity"
+    post:
+      operationId: createOpportunity
+      tags: [Opportunities]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OpportunityCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeOpportunity"
+  /v1/deals:
+    get:
+      operationId: listDeals
+      tags: [Deals]
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeDeal"
+    post:
+      operationId: createDeal
+      tags: [Deals]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DealCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeDeal"
+  /v1/deals/{dealId}:
+    parameters:
+      - $ref: "#/components/parameters/DealId"
+    get:
+      operationId: getDeal
+      tags: [Deals]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeDeal"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/deals/{dealId}/gates:
+    parameters:
+      - $ref: "#/components/parameters/DealId"
+    get:
+      operationId: listDealGates
+      tags: [Gates]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeComplianceGate"
+    post:
+      operationId: submitGateEvidence
+      tags: [Gates]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GateEvidence"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeComplianceGate"
+  /v1/deals/{dealId}/launch:
+    parameters:
+      - $ref: "#/components/parameters/DealId"
+    post:
+      operationId: launchDeal
+      tags: [Deals]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Launched or blocked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeDeal"
+  /v1/channels:
+    get:
+      operationId: listChannelNodes
+      tags: [Channels]
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+        - name: dealId
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeChannelNode"
+  /v1/channels/metrics:
+    post:
+      operationId: ingestChannelMetrics
+      tags: [Channels]
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChannelMetricsIngest"
+      responses:
+        "202":
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeChannelNode"
+  /v1/conflicts:
+    get:
+      operationId: listConflicts
+      tags: [Conflicts]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeConflict"
+    post:
+      operationId: createConflict
+      tags: [Conflicts]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConflictCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeConflict"
+  /v1/economics:
+    get:
+      operationId: listEconomicsSnapshots
+      tags: [Economics]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: dealId
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeEconomicsSnapshot"
+  /v1/audits/exports:
+    post:
+      operationId: createPartnoraAuditExport
+      tags: [Audits]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuditExportCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeAuditExport"
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Cursor:
+      name: cursor
+      in: query
+      schema: { type: string }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+
+    DealId:
+      name: dealId
+      in: path
+      required: true
+      schema: { type: string }
+
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    NotFound:
+      description: Not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    UnprocessableEntity:
+      description: Unprocessable entity
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+  schemas:
+    ResponseMeta:
+      type: object
+      required: [requestId, timestamp]
+      properties:
+        requestId: { type: string }
+        timestamp: { type: string, format: date-time }
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+
+    Partner:
+      type: object
+      required: [id, name, posture]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        posture: { type: string, enum: [bank, paymentsBank, smallFinanceBank, nbfc, fintech, bc, ngo, merchant] }
+        prohibitedActivities: { type: array, items: { type: string } }
+    PartnerCreate:
+      type: object
+      required: [name, posture]
+      properties:
+        name: { type: string }
+        posture: { type: string, enum: [bank, paymentsBank, smallFinanceBank, nbfc, fintech, bc, ngo, merchant] }
+        prohibitedActivities: { type: array, items: { type: string } }
+    Opportunity:
+      type: object
+      required: [id, title, status]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        partnerId: { type: string }
+        status: { type: string, enum: [pipeline, scoring, converted, dropped] }
+        fitScore: { type: number }
+        regulatoryRisk: { type: string, enum: [low, medium, high] }
+    OpportunityCreate:
+      type: object
+      required: [title, partnerId]
+      properties:
+        title: { type: string }
+        partnerId: { type: string }
+        thesis: { type: string }
+    Deal:
+      type: object
+      required: [id, status]
+      properties:
+        id: { type: string }
+        opportunityId: { type: string }
+        status: { type: string, enum: [draft, gated, live, remediating, exiting] }
+        commercialModel: { type: string }
+        inclusionKpis: { type: array, items: { type: string } }
+        gatesComplete: { type: boolean }
+    DealCreate:
+      type: object
+      required: [opportunityId, commercialModel]
+      properties:
+        opportunityId: { type: string }
+        commercialModel: { type: string }
+        inclusionKpis: { type: array, items: { type: string } }
+        exitTerms: { type: string }
+    ComplianceGate:
+      type: object
+      required: [id, dealId, gateType, status]
+      properties:
+        id: { type: string }
+        dealId: { type: string }
+        gateType: { type: string, enum: [outsourcing, kycAml, dataSharing, consumerProtection] }
+        status: { type: string, enum: [pending, passed, failed] }
+    GateEvidence:
+      type: object
+      required: [gateType, evidenceUri]
+      properties:
+        gateType: { type: string, enum: [outsourcing, kycAml, dataSharing, consumerProtection] }
+        evidenceUri: { type: string, format: uri }
+        notes: { type: string }
+    ChannelNode:
+      type: object
+      required: [id, dealId, nodeType]
+      properties:
+        id: { type: string }
+        dealId: { type: string }
+        nodeType: { type: string, enum: [bc, merchant, telco, ngo] }
+        geography: { type: string }
+        activations: { type: integer }
+        dormancyRate: { type: number }
+    ChannelMetricsIngest:
+      type: object
+      required: [channelNodeId, activations, dormancyRate]
+      properties:
+        channelNodeId: { type: string }
+        activations: { type: integer }
+        dormancyRate: { type: number }
+        asOf: { type: string, format: date-time }
+    Conflict:
+      type: object
+      required: [id, dealId, status]
+      properties:
+        id: { type: string }
+        dealId: { type: string }
+        description: { type: string }
+        mitigation: { type: string }
+        status: { type: string, enum: [open, mitigated, accepted] }
+    ConflictCreate:
+      type: object
+      required: [dealId, description]
+      properties:
+        dealId: { type: string }
+        description: { type: string }
+        mitigation: { type: string }
+    EconomicsSnapshot:
+      type: object
+      required: [id, dealId]
+      properties:
+        id: { type: string }
+        dealId: { type: string }
+        costToServe: { type: number }
+        feeIncome: { type: number }
+        floatIncome: { type: number }
+        period: { type: string }
+    AuditExport:
+      type: object
+      required: [id, status]
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [pending, ready, failed] }
+        downloadUri: { type: string, format: uri }
+    AuditExportCreate:
+      type: object
+      required: [periodFrom, periodTo]
+      properties:
+        periodFrom: { type: string, format: date-time }
+        periodTo: { type: string, format: date-time }
+
+    DataEnvelopePartner:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/Partner"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopePartner:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/Partner"
+            nextCursor: { type: string }
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopeOpportunity:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/Opportunity"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeOpportunity:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/Opportunity"
+            nextCursor: { type: string }
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopeDeal:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/Deal"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeDeal:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/Deal"
+            nextCursor: { type: string }
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopeComplianceGate:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/ComplianceGate"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeComplianceGate:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/ComplianceGate"
+            nextCursor: { type: string }
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopeChannelNode:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/ChannelNode"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeChannelNode:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/ChannelNode"
+            nextCursor: { type: string }
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopeConflict:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/Conflict"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeConflict:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/Conflict"
+            nextCursor: { type: string }
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopeEconomicsSnapshot:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/EconomicsSnapshot"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeEconomicsSnapshot:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/EconomicsSnapshot"
+            nextCursor: { type: string }
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopeAuditExport:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/AuditExport"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeAuditExport:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/AuditExport"
+            nextCursor: { type: string }
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
