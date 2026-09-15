@@ -1,0 +1,130 @@
+openapi: 3.1.0
+info:
+  title: Audits API schemas
+  version: 0.1.0
+  description: |
+    Board/regulator audit exports and incidents (BR-11).
+paths: {}
+components:
+  schemas:
+
+    AuditExportId:
+      type: string
+      pattern: '^aud_[0-9A-HJKMNP-TV-Z]{26}$'
+
+    IncidentId:
+      type: string
+      pattern: '^inc_[0-9A-HJKMNP-TV-Z]{26}$'
+
+    AuditExportStatus:
+      type: string
+      enum: [pending, ready, failed]
+
+    IncidentSeverity:
+      type: string
+      enum: [low, medium, high, critical]
+
+    AuditExport:
+      type: object
+      required: [auditExportId, status, periodFrom, periodTo, createdAt]
+      properties:
+        auditExportId:
+          $ref: '#/components/schemas/AuditExportId'
+        status:
+          $ref: '#/components/schemas/AuditExportStatus'
+        periodFrom: { type: string, format: date-time }
+        periodTo: { type: string, format: date-time }
+        downloadUri: { type: string, format: uri }
+        integrityHash: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    AuditExportCreateRequest:
+      type: object
+      required: [periodFrom, periodTo]
+      properties:
+        periodFrom: { type: string, format: date-time }
+        periodTo: { type: string, format: date-time }
+
+    Incident:
+      type: object
+      required: [incidentId, dealId, title, severity, createdAt]
+      properties:
+        incidentId:
+          $ref: '#/components/schemas/IncidentId'
+        dealId: { type: string }
+        title: { type: string }
+        severity:
+          $ref: '#/components/schemas/IncidentSeverity'
+        description: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    IncidentCreateRequest:
+      type: object
+      required: [dealId, title, severity]
+      properties:
+        dealId: { type: string }
+        title: { type: string }
+        severity:
+          $ref: '#/components/schemas/IncidentSeverity'
+        description: { type: string }
+
+    AuditExportListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditExport'
+        nextCursor:
+          type: string
+
+    AuditExportResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/AuditExport'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+    AuditExportListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/AuditExportListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+
+    IncidentListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Incident'
+        nextCursor:
+          type: string
+
+    IncidentResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Incident'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+    IncidentListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/IncidentListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+

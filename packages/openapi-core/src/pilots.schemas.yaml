@@ -1,0 +1,82 @@
+openapi: 3.1.0
+info:
+  title: Pilots API schemas
+  version: 0.1.0
+  description: |
+    Tech pilots attached to parent deals (BR-10).
+paths: {}
+components:
+  schemas:
+
+    PilotId:
+      type: string
+      pattern: '^plt_[0-9A-HJKMNP-TV-Z]{26}$'
+
+    PilotKind:
+      type: string
+      enum: [ai, rpa, blockchain, cyber, other]
+
+    PilotStatus:
+      type: string
+      enum: [active, quarantined, promoted, killed]
+
+    Pilot:
+      type: object
+      required: [pilotId, name, kind, status, createdAt, updatedAt]
+      properties:
+        pilotId:
+          $ref: '#/components/schemas/PilotId'
+        name: { type: string, minLength: 1 }
+        kind:
+          $ref: '#/components/schemas/PilotKind'
+        parentDealId: { type: string }
+        status:
+          $ref: '#/components/schemas/PilotStatus'
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    PilotCreateRequest:
+      type: object
+      required: [name, kind, parentDealId]
+      properties:
+        name: { type: string, minLength: 1 }
+        kind:
+          $ref: '#/components/schemas/PilotKind'
+        parentDealId: { type: string }
+
+    AttachPilotParentRequest:
+      type: object
+      required: [parentDealId]
+      properties:
+        parentDealId: { type: string }
+
+    PilotListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pilot'
+        nextCursor:
+          type: string
+
+    PilotResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Pilot'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+    PilotListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/PilotListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+

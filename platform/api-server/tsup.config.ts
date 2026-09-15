@@ -1,0 +1,13 @@
+import { defineConfig } from "tsup";
+
+export default defineConfig({
+  entry: ["src/index.ts"],
+  format: ["esm"],
+  dts: false,
+  sourcemap: true,
+  clean: true,
+  splitting: false,
+  outDir: "dist",
+  target: "node20",
+  external: [/^@partnora\//, /^@aws-sdk\//, "fastify", "dotenv", "zod", "jsonwebtoken", "@zodios/core", "@fastify/cors", "@fastify/helmet", "@fastify/jwt"],
+});

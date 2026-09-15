@@ -1,0 +1,96 @@
+openapi: 3.1.0
+info:
+  title: Data Purpose API schemas
+  version: 0.1.0
+  description: |
+    Purpose limitation and retention for partner data rooms (BR-7).
+paths: {}
+components:
+  schemas:
+
+    DataPurposeId:
+      type: string
+      pattern: '^dpr_[0-9A-HJKMNP-TV-Z]{26}$'
+
+    DataPurpose:
+      type: object
+      required: [dataPurposeId, dealId, purpose, retentionDays, createdAt, updatedAt]
+      properties:
+        dataPurposeId:
+          $ref: '#/components/schemas/DataPurposeId'
+        dealId: { type: string }
+        purpose: { type: string, minLength: 1 }
+        attributes:
+          type: array
+          items: { type: string }
+        retentionDays: { type: integer, minimum: 1 }
+        aadhaarLinked: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    DataPurposeCreateRequest:
+      type: object
+      required: [dealId, purpose, retentionDays]
+      properties:
+        dealId: { type: string }
+        purpose: { type: string, minLength: 1 }
+        attributes:
+          type: array
+          items: { type: string }
+        retentionDays: { type: integer, minimum: 1 }
+        aadhaarLinked: { type: boolean }
+
+    DataExportAttemptRequest:
+      type: object
+      required: [dealId, purpose, attributeCount]
+      properties:
+        dealId: { type: string }
+        purpose: { type: string }
+        attributeCount: { type: integer, minimum: 1 }
+
+    DataExportAttempt:
+      type: object
+      required: [allowed, reason]
+      properties:
+        allowed: { type: boolean }
+        reason: { type: string }
+
+    DataExportAttemptResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/DataExportAttempt'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+    DataPurposeListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataPurpose'
+        nextCursor:
+          type: string
+
+    DataPurposeResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/DataPurpose'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+    DataPurposeListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/DataPurposeListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+

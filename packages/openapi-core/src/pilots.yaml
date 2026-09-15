@@ -1,0 +1,179 @@
+openapi: 3.1.0
+info:
+  title: Pilots API
+  version: 0.1.0
+  description: |
+    Tech pilots attached to parent deals (BR-10).
+  license:
+    name: Proprietary
+    url: https://partnora.local/license
+  x-domain: plt
+servers:
+  - url: https://api.partnora.local
+    description: Local / Partnora API
+security:
+  - apiKey: []
+tags:
+  - name: Pilots
+    description: Pilot attachment board
+paths:
+
+  /v1/pilots:
+    get:
+      operationId: listPilots
+      tags: [Pilots]
+      summary: List pilots
+
+      parameters:
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+
+        - name: parentDealId
+          in: query
+          schema: { type: string }
+        - name: orphansOnly
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200':
+          description: Pilots
+          content:
+            application/json:
+              schema:
+                $ref: ./pilots.schemas.yaml#/components/schemas/PilotListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createPilot
+      tags: [Pilots]
+      summary: Create pilot attached to parent deal
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./pilots.schemas.yaml#/components/schemas/PilotCreateRequest
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./pilots.schemas.yaml#/components/schemas/PilotResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/pilots/{pilotId}:
+    get:
+      operationId: getPilot
+      tags: [Pilots]
+      summary: Get pilot
+      parameters:
+        - name: pilotId
+          in: path
+          required: true
+          schema:
+            $ref: ./pilots.schemas.yaml#/components/schemas/PilotId
+      responses:
+        '200':
+          description: Pilot
+          content:
+            application/json:
+              schema:
+                $ref: ./pilots.schemas.yaml#/components/schemas/PilotResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/pilots/{pilotId}/attach-parent:
+    post:
+      operationId: attachPilotParent
+      tags: [Pilots]
+      summary: Attach or re-attach parent deal
+      parameters:
+        - name: pilotId
+          in: path
+          required: true
+          schema:
+            $ref: ./pilots.schemas.yaml#/components/schemas/PilotId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./pilots.schemas.yaml#/components/schemas/AttachPilotParentRequest
+      responses:
+        '200':
+          description: Attached
+          content:
+            application/json:
+              schema:
+                $ref: ./pilots.schemas.yaml#/components/schemas/PilotResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/pilots/{pilotId}/quarantine:
+    post:
+      operationId: quarantinePilot
+      tags: [Pilots]
+      summary: Quarantine orphan / shadow-IT pilot
+      parameters:
+        - name: pilotId
+          in: path
+          required: true
+          schema:
+            $ref: ./pilots.schemas.yaml#/components/schemas/PilotId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      responses:
+        '200':
+          description: Quarantined
+          content:
+            application/json:
+              schema:
+                $ref: ./pilots.schemas.yaml#/components/schemas/PilotResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

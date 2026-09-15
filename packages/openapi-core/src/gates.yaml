@@ -1,0 +1,122 @@
+openapi: 3.1.0
+info:
+  title: Compliance Gates API
+  version: 0.1.0
+  description: |
+    RBI outsourcing / KYC / data launch gates (BR-3).
+  license:
+    name: Proprietary
+    url: https://partnora.local/license
+  x-domain: gate
+servers:
+  - url: https://api.partnora.local
+    description: Local / Partnora API
+security:
+  - apiKey: []
+tags:
+  - name: Gates
+    description: Compliance launch gates
+paths:
+
+  /v1/deals/{dealId}/gates:
+    get:
+      operationId: listDealGates
+      tags: [Gates]
+      summary: List compliance gates for a deal
+      parameters:
+        - name: dealId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Gates
+          content:
+            application/json:
+              schema:
+                $ref: ./gates.schemas.yaml#/components/schemas/ComplianceGateListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: submitGateEvidence
+      tags: [Gates]
+      summary: Submit gate evidence
+      parameters:
+        - name: dealId
+          in: path
+          required: true
+          schema: { type: string }
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./gates.schemas.yaml#/components/schemas/GateEvidenceRequest
+      responses:
+        '201':
+          description: Evidence recorded
+          content:
+            application/json:
+              schema:
+                $ref: ./gates.schemas.yaml#/components/schemas/ComplianceGateResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/deals/{dealId}/gates/{gateId}:
+    post:
+      operationId: decideGate
+      tags: [Gates]
+      summary: Pass or fail a gate item
+      parameters:
+        - name: dealId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: gateId
+          in: path
+          required: true
+          schema:
+            $ref: ./gates.schemas.yaml#/components/schemas/ComplianceGateId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./gates.schemas.yaml#/components/schemas/PassFailGateRequest
+      responses:
+        '200':
+          description: Gate decided
+          content:
+            application/json:
+              schema:
+                $ref: ./gates.schemas.yaml#/components/schemas/ComplianceGateResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

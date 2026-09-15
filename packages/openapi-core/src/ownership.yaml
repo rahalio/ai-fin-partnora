@@ -1,0 +1,144 @@
+openapi: 3.1.0
+info:
+  title: Customer Ownership API
+  version: 0.1.0
+  description: |
+    Journey-step ownership and complaint liability (BR-6).
+  license:
+    name: Proprietary
+    url: https://partnora.local/license
+  x-domain: own
+servers:
+  - url: https://api.partnora.local
+    description: Local / Partnora API
+security:
+  - apiKey: []
+tags:
+  - name: Ownership
+    description: Customer ownership and complaints routing
+paths:
+
+  /v1/ownership-rules:
+    get:
+      operationId: listOwnershipRules
+      tags: [Ownership]
+      summary: List ownership rules
+
+      parameters:
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+
+        - name: dealId
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Ownership rules
+          content:
+            application/json:
+              schema:
+                $ref: ./ownership.schemas.yaml#/components/schemas/CustomerOwnershipRuleListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createOwnershipRule
+      tags: [Ownership]
+      summary: Publish ownership / complaint liability for a journey step
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./ownership.schemas.yaml#/components/schemas/OwnershipRuleCreateRequest
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./ownership.schemas.yaml#/components/schemas/CustomerOwnershipRuleResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/ownership-rules/{ownershipRuleId}:
+    get:
+      operationId: getOwnershipRule
+      tags: [Ownership]
+      summary: Get ownership rule
+      parameters:
+        - name: ownershipRuleId
+          in: path
+          required: true
+          schema:
+            $ref: ./ownership.schemas.yaml#/components/schemas/OwnershipRuleId
+      responses:
+        '200':
+          description: Rule
+          content:
+            application/json:
+              schema:
+                $ref: ./ownership.schemas.yaml#/components/schemas/CustomerOwnershipRuleResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    patch:
+      operationId: updateOwnershipRule
+      tags: [Ownership]
+      summary: Update ownership rule
+      parameters:
+        - name: ownershipRuleId
+          in: path
+          required: true
+          schema:
+            $ref: ./ownership.schemas.yaml#/components/schemas/OwnershipRuleId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./ownership.schemas.yaml#/components/schemas/UpdateOwnershipRuleRequest
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: ./ownership.schemas.yaml#/components/schemas/CustomerOwnershipRuleResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

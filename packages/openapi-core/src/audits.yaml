@@ -1,0 +1,166 @@
+openapi: 3.1.0
+info:
+  title: Audits API
+  version: 0.1.0
+  description: |
+    Board/regulator audit exports and incidents (BR-11).
+  license:
+    name: Proprietary
+    url: https://partnora.local/license
+  x-domain: aud
+servers:
+  - url: https://api.partnora.local
+    description: Local / Partnora API
+security:
+  - apiKey: []
+tags:
+  - name: Audits
+    description: Audit exports
+  - name: Incidents
+    description: Partnership incidents
+paths:
+
+  /v1/audits/exports:
+    get:
+      operationId: listAuditExports
+      tags: [Audits]
+      summary: List audit exports
+
+      parameters:
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+
+      responses:
+        '200':
+          description: Exports
+          content:
+            application/json:
+              schema:
+                $ref: ./audits.schemas.yaml#/components/schemas/AuditExportListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createAuditExport
+      tags: [Audits]
+      summary: Generate board/regulator pack
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./audits.schemas.yaml#/components/schemas/AuditExportCreateRequest
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./audits.schemas.yaml#/components/schemas/AuditExportResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/audits/exports/{auditExportId}:
+    get:
+      operationId: getAuditExport
+      tags: [Audits]
+      summary: Get audit export
+      parameters:
+        - name: auditExportId
+          in: path
+          required: true
+          schema:
+            $ref: ./audits.schemas.yaml#/components/schemas/AuditExportId
+      responses:
+        '200':
+          description: Export
+          content:
+            application/json:
+              schema:
+                $ref: ./audits.schemas.yaml#/components/schemas/AuditExportResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/incidents:
+    get:
+      operationId: listIncidents
+      tags: [Incidents]
+      summary: List incidents
+
+      parameters:
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+
+        - name: dealId
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Incidents
+          content:
+            application/json:
+              schema:
+                $ref: ./audits.schemas.yaml#/components/schemas/IncidentListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createIncident
+      tags: [Incidents]
+      summary: Log partnership incident
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./audits.schemas.yaml#/components/schemas/IncidentCreateRequest
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./audits.schemas.yaml#/components/schemas/IncidentResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

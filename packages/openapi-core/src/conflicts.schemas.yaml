@@ -1,0 +1,81 @@
+openapi: 3.1.0
+info:
+  title: Conflicts API schemas
+  version: 0.1.0
+  description: |
+    Coopetition conflict register (BR-4).
+paths: {}
+components:
+  schemas:
+
+    ConflictId:
+      type: string
+      pattern: '^cfl_[0-9A-HJKMNP-TV-Z]{26}$'
+
+    ConflictStatus:
+      type: string
+      enum: [open, mitigated, accepted]
+
+    Conflict:
+      type: object
+      required: [conflictId, dealId, description, status, createdAt, updatedAt]
+      properties:
+        conflictId:
+          $ref: '#/components/schemas/ConflictId'
+        dealId: { type: string }
+        description: { type: string, minLength: 1 }
+        mitigation: { type: string }
+        overlappingProducts:
+          type: array
+          items: { type: string }
+        status:
+          $ref: '#/components/schemas/ConflictStatus'
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    ConflictCreateRequest:
+      type: object
+      required: [dealId, description]
+      properties:
+        dealId: { type: string }
+        description: { type: string, minLength: 1 }
+        mitigation: { type: string }
+        overlappingProducts:
+          type: array
+          items: { type: string }
+
+    AcceptConflictMitigationRequest:
+      type: object
+      properties:
+        notes: { type: string }
+
+    ConflictListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Conflict'
+        nextCursor:
+          type: string
+
+    ConflictResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Conflict'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+    ConflictListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ConflictListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+

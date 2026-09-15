@@ -1,0 +1,179 @@
+openapi: 3.1.0
+info:
+  title: Opportunities API
+  version: 0.1.0
+  description: |
+    Partnership opportunity pipeline scoring (BR-1).
+  license:
+    name: Proprietary
+    url: https://partnora.local/license
+  x-domain: opp
+servers:
+  - url: https://api.partnora.local
+    description: Local / Partnora API
+security:
+  - apiKey: []
+tags:
+  - name: Opportunities
+    description: Partnership pipeline
+paths:
+
+  /v1/opportunities:
+    get:
+      operationId: listOpportunities
+      tags: [Opportunities]
+      summary: List opportunities
+
+      parameters:
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+
+      responses:
+        '200':
+          description: Opportunities
+          content:
+            application/json:
+              schema:
+                $ref: ./opportunities.schemas.yaml#/components/schemas/OpportunityListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createOpportunity
+      tags: [Opportunities]
+      summary: Create opportunity
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./opportunities.schemas.yaml#/components/schemas/OpportunityCreateRequest
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./opportunities.schemas.yaml#/components/schemas/OpportunityResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/opportunities/{opportunityId}:
+    get:
+      operationId: getOpportunity
+      tags: [Opportunities]
+      summary: Get opportunity
+      parameters:
+        - name: opportunityId
+          in: path
+          required: true
+          schema:
+            $ref: ./opportunities.schemas.yaml#/components/schemas/OpportunityId
+      responses:
+        '200':
+          description: Opportunity
+          content:
+            application/json:
+              schema:
+                $ref: ./opportunities.schemas.yaml#/components/schemas/OpportunityResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/opportunities/{opportunityId}/score:
+    post:
+      operationId: scoreOpportunity
+      tags: [Opportunities]
+      summary: Score fit and regulatory risk
+      parameters:
+        - name: opportunityId
+          in: path
+          required: true
+          schema:
+            $ref: ./opportunities.schemas.yaml#/components/schemas/OpportunityId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./opportunities.schemas.yaml#/components/schemas/ScoreOpportunityRequest
+      responses:
+        '200':
+          description: Scored
+          content:
+            application/json:
+              schema:
+                $ref: ./opportunities.schemas.yaml#/components/schemas/OpportunityResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/opportunities/{opportunityId}/advance:
+    post:
+      operationId: advanceOpportunity
+      tags: [Opportunities]
+      summary: Advance, convert, or drop opportunity
+      parameters:
+        - name: opportunityId
+          in: path
+          required: true
+          schema:
+            $ref: ./opportunities.schemas.yaml#/components/schemas/OpportunityId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./opportunities.schemas.yaml#/components/schemas/AdvanceOpportunityRequest
+      responses:
+        '200':
+          description: Advanced
+          content:
+            application/json:
+              schema:
+                $ref: ./opportunities.schemas.yaml#/components/schemas/OpportunityResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

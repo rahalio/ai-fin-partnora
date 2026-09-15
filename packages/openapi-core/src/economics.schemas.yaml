@@ -1,0 +1,68 @@
+openapi: 3.1.0
+info:
+  title: Economics API schemas
+  version: 0.1.0
+  description: |
+    PB-aware unit economics snapshots (BR-9).
+paths: {}
+components:
+  schemas:
+
+    EconomicsSnapshotId:
+      type: string
+      pattern: '^eco_[0-9A-HJKMNP-TV-Z]{26}$'
+
+    EconomicsSnapshot:
+      type: object
+      required: [economicsSnapshotId, dealId, period, costToServe, feeIncome, floatIncome, createdAt]
+      properties:
+        economicsSnapshotId:
+          $ref: '#/components/schemas/EconomicsSnapshotId'
+        dealId: { type: string }
+        period: { type: string, description: 'YYYY-MM' }
+        costToServe: { type: number }
+        feeIncome: { type: number }
+        floatIncome: { type: number }
+        valueDestroying: { type: boolean }
+        createdAt: { type: string, format: date-time }
+
+    EconomicsSnapshotCreateRequest:
+      type: object
+      required: [dealId, period, costToServe, feeIncome, floatIncome]
+      properties:
+        dealId: { type: string }
+        period: { type: string }
+        costToServe: { type: number }
+        feeIncome: { type: number }
+        floatIncome: { type: number }
+
+    EconomicsSnapshotListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EconomicsSnapshot'
+        nextCursor:
+          type: string
+
+    EconomicsSnapshotResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/EconomicsSnapshot'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+    EconomicsSnapshotListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/EconomicsSnapshotListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+

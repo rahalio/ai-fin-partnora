@@ -1,0 +1,303 @@
+openapi: 3.1.0
+info:
+  title: Deals API
+  version: 0.1.0
+  description: |
+    Commercial deal workspace, launch, M&A reassessment (BR-2, BR-8).
+  license:
+    name: Proprietary
+    url: https://partnora.local/license
+  x-domain: deal
+servers:
+  - url: https://api.partnora.local
+    description: Local / Partnora API
+security:
+  - apiKey: []
+tags:
+  - name: Deals
+    description: Commercial deal workspace
+  - name: MaReassessment
+    description: M&A partnership reassessment
+paths:
+
+  /v1/deals:
+    get:
+      operationId: listDeals
+      tags: [Deals]
+      summary: List deals
+
+      parameters:
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+
+        - name: status
+          in: query
+          schema:
+            $ref: ./deals.schemas.yaml#/components/schemas/DealStatus
+      responses:
+        '200':
+          description: Deals
+          content:
+            application/json:
+              schema:
+                $ref: ./deals.schemas.yaml#/components/schemas/DealListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createDeal
+      tags: [Deals]
+      summary: Create deal draft (requires commercial model, KPIs, exit)
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./deals.schemas.yaml#/components/schemas/DealCreateRequest
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./deals.schemas.yaml#/components/schemas/DealResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/deals/{dealId}:
+    get:
+      operationId: getDeal
+      tags: [Deals]
+      summary: Get deal
+      parameters:
+        - name: dealId
+          in: path
+          required: true
+          schema:
+            $ref: ./deals.schemas.yaml#/components/schemas/DealId
+      responses:
+        '200':
+          description: Deal
+          content:
+            application/json:
+              schema:
+                $ref: ./deals.schemas.yaml#/components/schemas/DealResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    patch:
+      operationId: updateDeal
+      tags: [Deals]
+      summary: Update commercial terms / KPIs / exit
+      parameters:
+        - name: dealId
+          in: path
+          required: true
+          schema:
+            $ref: ./deals.schemas.yaml#/components/schemas/DealId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./deals.schemas.yaml#/components/schemas/UpdateDealRequest
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: ./deals.schemas.yaml#/components/schemas/DealResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/deals/{dealId}/submit-gates:
+    post:
+      operationId: submitDealToGates
+      tags: [Deals]
+      summary: Submit deal to compliance gates
+      parameters:
+        - name: dealId
+          in: path
+          required: true
+          schema:
+            $ref: ./deals.schemas.yaml#/components/schemas/DealId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      responses:
+        '200':
+          description: Gated
+          content:
+            application/json:
+              schema:
+                $ref: ./deals.schemas.yaml#/components/schemas/DealResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/deals/{dealId}/launch:
+    post:
+      operationId: launchDeal
+      tags: [Deals]
+      summary: Launch deal if gates complete (BR-3)
+      parameters:
+        - name: dealId
+          in: path
+          required: true
+          schema:
+            $ref: ./deals.schemas.yaml#/components/schemas/DealId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      responses:
+        '200':
+          description: Launched or blocked
+          content:
+            application/json:
+              schema:
+                $ref: ./deals.schemas.yaml#/components/schemas/DealResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/deals/{dealId}/remediate:
+    post:
+      operationId: remediateDeal
+      tags: [Deals]
+      summary: Start KPI remediation
+      parameters:
+        - name: dealId
+          in: path
+          required: true
+          schema:
+            $ref: ./deals.schemas.yaml#/components/schemas/DealId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      responses:
+        '200':
+          description: Remediating
+          content:
+            application/json:
+              schema:
+                $ref: ./deals.schemas.yaml#/components/schemas/DealResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/deals/{dealId}/exit:
+    post:
+      operationId: startDealExit
+      tags: [Deals]
+      summary: Start exit / wind-down
+      parameters:
+        - name: dealId
+          in: path
+          required: true
+          schema:
+            $ref: ./deals.schemas.yaml#/components/schemas/DealId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      responses:
+        '200':
+          description: Exiting
+          content:
+            application/json:
+              schema:
+                $ref: ./deals.schemas.yaml#/components/schemas/DealResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/deals/ma-reassessments:
+    post:
+      operationId: startMaReassessment
+      tags: [MaReassessment]
+      summary: Trigger M&A portfolio reassessment (BR-8)
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./deals.schemas.yaml#/components/schemas/StartMaReassessmentRequest
+      responses:
+        '200':
+          description: Reassessment started
+          content:
+            application/json:
+              schema:
+                $ref: ./deals.schemas.yaml#/components/schemas/DealListResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

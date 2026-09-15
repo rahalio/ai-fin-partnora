@@ -1,0 +1,81 @@
+openapi: 3.1.0
+info:
+  title: Channels API schemas
+  version: 0.1.0
+  description: |
+    Last-mile BC/merchant/telco/NGO performance (BR-5).
+paths: {}
+components:
+  schemas:
+
+    ChannelNodeId:
+      type: string
+      pattern: '^chn_[0-9A-HJKMNP-TV-Z]{26}$'
+
+    NodeType:
+      type: string
+      enum: [bc, merchant, telco, ngo]
+
+    ChannelNode:
+      type: object
+      required: [channelNodeId, dealId, nodeType, geography, createdAt, updatedAt]
+      properties:
+        channelNodeId:
+          $ref: '#/components/schemas/ChannelNodeId'
+        dealId: { type: string }
+        nodeType:
+          $ref: '#/components/schemas/NodeType'
+        geography: { type: string }
+        activations: { type: integer, minimum: 0 }
+        dormancyRate: { type: number, minimum: 0, maximum: 1 }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    ChannelNodeCreateRequest:
+      type: object
+      required: [dealId, nodeType, geography]
+      properties:
+        dealId: { type: string }
+        nodeType:
+          $ref: '#/components/schemas/NodeType'
+        geography: { type: string }
+
+    ChannelMetricsIngestRequest:
+      type: object
+      required: [channelNodeId, activations, dormancyRate]
+      properties:
+        channelNodeId: { type: string }
+        activations: { type: integer, minimum: 0 }
+        dormancyRate: { type: number, minimum: 0, maximum: 1 }
+        asOf: { type: string, format: date-time }
+
+    ChannelNodeListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChannelNode'
+        nextCursor:
+          type: string
+
+    ChannelNodeResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ChannelNode'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+    ChannelNodeListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ChannelNodeListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+

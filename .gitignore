@@ -21,3 +21,12 @@ codegen/
 **/zero_codegen/
 **/integration-events/generated/
 platform/tests/postman/generated/
+
+# From scaffold
+*.tsbuildinfo
+packages/openapi-core/src/.bundled/
+**/node_modules/
+**/__pycache__/
+*.pyc
+test-results/
+playwright-report/

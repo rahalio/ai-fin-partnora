@@ -1,0 +1,140 @@
+openapi: 3.1.0
+info:
+  title: Channels API
+  version: 0.1.0
+  description: |
+    Last-mile BC/merchant/telco/NGO performance (BR-5).
+  license:
+    name: Proprietary
+    url: https://partnora.local/license
+  x-domain: chn
+servers:
+  - url: https://api.partnora.local
+    description: Local / Partnora API
+security:
+  - apiKey: []
+tags:
+  - name: Channels
+    description: Last-mile channel performance
+paths:
+
+  /v1/channels:
+    get:
+      operationId: listChannelNodes
+      tags: [Channels]
+      summary: List channel nodes
+
+      parameters:
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+
+        - name: dealId
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Channel nodes
+          content:
+            application/json:
+              schema:
+                $ref: ./channels.schemas.yaml#/components/schemas/ChannelNodeListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createChannelNode
+      tags: [Channels]
+      summary: Register a last-mile node
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./channels.schemas.yaml#/components/schemas/ChannelNodeCreateRequest
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./channels.schemas.yaml#/components/schemas/ChannelNodeResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/channels/{channelNodeId}:
+    get:
+      operationId: getChannelNode
+      tags: [Channels]
+      summary: Get channel node
+      parameters:
+        - name: channelNodeId
+          in: path
+          required: true
+          schema:
+            $ref: ./channels.schemas.yaml#/components/schemas/ChannelNodeId
+      responses:
+        '200':
+          description: Channel node
+          content:
+            application/json:
+              schema:
+                $ref: ./channels.schemas.yaml#/components/schemas/ChannelNodeResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/channels/metrics:
+    post:
+      operationId: ingestChannelMetrics
+      tags: [Channels]
+      summary: Ingest activation/dormancy metrics
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./channels.schemas.yaml#/components/schemas/ChannelMetricsIngestRequest
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: ./channels.schemas.yaml#/components/schemas/ChannelNodeResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

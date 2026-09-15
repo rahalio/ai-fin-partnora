@@ -1,0 +1,86 @@
+openapi: 3.1.0
+info:
+  title: Compliance Gates API schemas
+  version: 0.1.0
+  description: |
+    RBI outsourcing / KYC / data launch gates (BR-3).
+paths: {}
+components:
+  schemas:
+
+    ComplianceGateId:
+      type: string
+      pattern: '^gate_[0-9A-HJKMNP-TV-Z]{26}$'
+
+    GateType:
+      type: string
+      enum: [outsourcing, kycAml, dataSharing, consumerProtection]
+
+    GateStatus:
+      type: string
+      enum: [pending, passed, failed]
+
+    ComplianceGate:
+      type: object
+      required: [gateId, dealId, gateType, status, createdAt, updatedAt]
+      properties:
+        gateId:
+          $ref: '#/components/schemas/ComplianceGateId'
+        dealId: { type: string }
+        gateType:
+          $ref: '#/components/schemas/GateType'
+        status:
+          $ref: '#/components/schemas/GateStatus'
+        evidenceUri: { type: string, format: uri }
+        notes: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    GateEvidenceRequest:
+      type: object
+      required: [gateType, evidenceUri]
+      properties:
+        gateType:
+          $ref: '#/components/schemas/GateType'
+        evidenceUri: { type: string, format: uri }
+        notes: { type: string }
+
+    PassFailGateRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [passed, failed]
+        notes: { type: string }
+
+    ComplianceGateListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComplianceGate'
+        nextCursor:
+          type: string
+
+    ComplianceGateResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ComplianceGate'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+    ComplianceGateListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ComplianceGateListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+

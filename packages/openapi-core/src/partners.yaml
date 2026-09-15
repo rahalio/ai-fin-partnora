@@ -1,0 +1,141 @@
+openapi: 3.1.0
+info:
+  title: Partners API
+  version: 0.1.0
+  description: |
+    Partner registry and regulatory postures (BR-1).
+  license:
+    name: Proprietary
+    url: https://partnora.local/license
+  x-domain: ptn
+servers:
+  - url: https://api.partnora.local
+    description: Local / Partnora API
+security:
+  - apiKey: []
+tags:
+  - name: Partners
+    description: Partner registry and regulatory postures
+paths:
+
+  /v1/partners:
+    get:
+      operationId: listPartners
+      tags: [Partners]
+      summary: List partners
+
+      parameters:
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+
+      responses:
+        '200':
+          description: Partners
+          content:
+            application/json:
+              schema:
+                $ref: ./partners.schemas.yaml#/components/schemas/PartnerListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createPartner
+      tags: [Partners]
+      summary: Register a partner with regulatory posture
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./partners.schemas.yaml#/components/schemas/PartnerCreateRequest
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./partners.schemas.yaml#/components/schemas/PartnerResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/partners/{partnerId}:
+    get:
+      operationId: getPartner
+      tags: [Partners]
+      summary: Get partner
+      parameters:
+        - name: partnerId
+          in: path
+          required: true
+          schema:
+            $ref: ./partners.schemas.yaml#/components/schemas/PartnerId
+      responses:
+        '200':
+          description: Partner
+          content:
+            application/json:
+              schema:
+                $ref: ./partners.schemas.yaml#/components/schemas/PartnerResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    patch:
+      operationId: updatePartner
+      tags: [Partners]
+      summary: Update partner
+      parameters:
+        - name: partnerId
+          in: path
+          required: true
+          schema:
+            $ref: ./partners.schemas.yaml#/components/schemas/PartnerId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./partners.schemas.yaml#/components/schemas/UpdatePartnerRequest
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: ./partners.schemas.yaml#/components/schemas/PartnerResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

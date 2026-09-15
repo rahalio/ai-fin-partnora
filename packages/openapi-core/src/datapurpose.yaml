@@ -1,0 +1,160 @@
+openapi: 3.1.0
+info:
+  title: Data Purpose API
+  version: 0.1.0
+  description: |
+    Purpose limitation and retention for partner data rooms (BR-7).
+  license:
+    name: Proprietary
+    url: https://partnora.local/license
+  x-domain: dpr
+servers:
+  - url: https://api.partnora.local
+    description: Local / Partnora API
+security:
+  - apiKey: []
+tags:
+  - name: DataPurpose
+    description: Data-purpose registers
+paths:
+
+  /v1/data-purposes:
+    get:
+      operationId: listDataPurposes
+      tags: [DataPurpose]
+      summary: List data purposes
+
+      parameters:
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+
+        - name: dealId
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Data purposes
+          content:
+            application/json:
+              schema:
+                $ref: ./datapurpose.schemas.yaml#/components/schemas/DataPurposeListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createDataPurpose
+      tags: [DataPurpose]
+      summary: Grant a data purpose
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./datapurpose.schemas.yaml#/components/schemas/DataPurposeCreateRequest
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./datapurpose.schemas.yaml#/components/schemas/DataPurposeResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/data-purposes/{dataPurposeId}:
+    get:
+      operationId: getDataPurpose
+      tags: [DataPurpose]
+      summary: Get data purpose
+      parameters:
+        - name: dataPurposeId
+          in: path
+          required: true
+          schema:
+            $ref: ./datapurpose.schemas.yaml#/components/schemas/DataPurposeId
+      responses:
+        '200':
+          description: Data purpose
+          content:
+            application/json:
+              schema:
+                $ref: ./datapurpose.schemas.yaml#/components/schemas/DataPurposeResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    delete:
+      operationId: revokeDataPurpose
+      tags: [DataPurpose]
+      summary: Revoke a data purpose
+      parameters:
+        - name: dataPurposeId
+          in: path
+          required: true
+          schema:
+            $ref: ./datapurpose.schemas.yaml#/components/schemas/DataPurposeId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      responses:
+        '204':
+          description: Revoked
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/data-purposes/export-check:
+    post:
+      operationId: checkDataExport
+      tags: [DataPurpose]
+      summary: Block bulk export outside purpose (BR-7)
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./datapurpose.schemas.yaml#/components/schemas/DataExportAttemptRequest
+      responses:
+        '200':
+          description: Export decision
+          content:
+            application/json:
+              schema:
+                $ref: ./datapurpose.schemas.yaml#/components/schemas/DataExportAttemptResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

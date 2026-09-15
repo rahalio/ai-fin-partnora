@@ -1,0 +1,75 @@
+openapi: 3.1.0
+info:
+  title: Customer Ownership API schemas
+  version: 0.1.0
+  description: |
+    Journey-step ownership and complaint liability (BR-6).
+paths: {}
+components:
+  schemas:
+
+    OwnershipRuleId:
+      type: string
+      pattern: '^own_[0-9A-HJKMNP-TV-Z]{26}$'
+
+    CustomerOwnershipRule:
+      type: object
+      required: [ownershipRuleId, dealId, journeyStep, ownerParty, complaintLiability, createdAt, updatedAt]
+      properties:
+        ownershipRuleId:
+          $ref: '#/components/schemas/OwnershipRuleId'
+        dealId: { type: string }
+        journeyStep: { type: string }
+        ownerParty: { type: string }
+        complaintLiability: { type: string }
+        routingSlaHours: { type: integer, minimum: 1 }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    OwnershipRuleCreateRequest:
+      type: object
+      required: [dealId, journeyStep, ownerParty, complaintLiability]
+      properties:
+        dealId: { type: string }
+        journeyStep: { type: string }
+        ownerParty: { type: string }
+        complaintLiability: { type: string }
+        routingSlaHours: { type: integer, minimum: 1 }
+
+    UpdateOwnershipRuleRequest:
+      type: object
+      properties:
+        ownerParty: { type: string }
+        complaintLiability: { type: string }
+        routingSlaHours: { type: integer, minimum: 1 }
+
+    CustomerOwnershipRuleListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerOwnershipRule'
+        nextCursor:
+          type: string
+
+    CustomerOwnershipRuleResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/CustomerOwnershipRule'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+    CustomerOwnershipRuleListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/CustomerOwnershipRuleListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+

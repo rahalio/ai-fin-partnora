@@ -1,0 +1,135 @@
+openapi: 3.1.0
+info:
+  title: Deals API schemas
+  version: 0.1.0
+  description: |
+    Commercial deal workspace, launch, M&A reassessment (BR-2, BR-8).
+paths: {}
+components:
+  schemas:
+
+    DealId:
+      type: string
+      pattern: '^deal_[0-9A-HJKMNP-TV-Z]{26}$'
+
+    DealStatus:
+      type: string
+      enum: [draft, gated, live, remediating, exiting]
+
+    CommercialModel:
+      type: string
+      enum: [revenueShare, fee, costPerActivation]
+
+    CommercialTerm:
+      type: object
+      required: [model]
+      properties:
+        model:
+          $ref: '#/components/schemas/CommercialModel'
+        bankRole: { type: string }
+        partnerRole: { type: string }
+        shareBps: { type: integer, minimum: 0, maximum: 10000 }
+        feeAmount: { type: number }
+        currency: { type: string, default: INR }
+
+    InclusionKpi:
+      type: object
+      required: [name, target]
+      properties:
+        name: { type: string }
+        target: { type: number }
+        unit: { type: string }
+        actual: { type: number }
+
+    Deal:
+      type: object
+      required: [dealId, status, commercialModel, gatesComplete, createdAt, updatedAt]
+      properties:
+        dealId:
+          $ref: '#/components/schemas/DealId'
+        opportunityId: { type: string }
+        status:
+          $ref: '#/components/schemas/DealStatus'
+        commercialModel:
+          $ref: '#/components/schemas/CommercialModel'
+        commercialTerms:
+          $ref: '#/components/schemas/CommercialTerm'
+        inclusionKpis:
+          type: array
+          items:
+            $ref: '#/components/schemas/InclusionKpi'
+        exitTerms: { type: string }
+        gatesComplete: { type: boolean }
+        inheritedFromDealId: { type: string }
+        reassessmentStatus:
+          type: string
+          enum: [none, pending, complete]
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    DealCreateRequest:
+      type: object
+      required: [opportunityId, commercialModel, exitTerms]
+      properties:
+        opportunityId: { type: string }
+        commercialModel:
+          $ref: '#/components/schemas/CommercialModel'
+        commercialTerms:
+          $ref: '#/components/schemas/CommercialTerm'
+        inclusionKpis:
+          type: array
+          items:
+            $ref: '#/components/schemas/InclusionKpi'
+        exitTerms: { type: string, minLength: 1 }
+
+    UpdateDealRequest:
+      type: object
+      properties:
+        commercialTerms:
+          $ref: '#/components/schemas/CommercialTerm'
+        inclusionKpis:
+          type: array
+          items:
+            $ref: '#/components/schemas/InclusionKpi'
+        exitTerms: { type: string }
+
+    StartMaReassessmentRequest:
+      type: object
+      required: [inheritedDealIds]
+      properties:
+        inheritedDealIds:
+          type: array
+          items: { type: string }
+          minItems: 1
+        notes: { type: string }
+
+    DealListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Deal'
+        nextCursor:
+          type: string
+
+    DealResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Deal'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+    DealListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/DealListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+

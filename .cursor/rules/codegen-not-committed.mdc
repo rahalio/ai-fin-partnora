@@ -1,0 +1,11 @@
+---
+description: Never commit or push .codegen to GitHub
+alwaysApply: true
+---
+
+# `.codegen` must never be committed
+
+- The directory `.codegen/` (zero-codegen tool + merged config) is **local-only**.
+- **Never** `git add`, commit, or push `.codegen/` (or any `zero_codegen` package copy) to GitHub.
+- It is listed in `.gitignore` as a safeguard; do not remove that entry.
+- Fresh clones: restore `.codegen/` from `zero-apps-codegen-scaffold`, then run `pnpm codegen:paths`.

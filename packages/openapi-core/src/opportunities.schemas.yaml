@@ -1,0 +1,93 @@
+openapi: 3.1.0
+info:
+  title: Opportunities API schemas
+  version: 0.1.0
+  description: |
+    Partnership opportunity pipeline scoring (BR-1).
+paths: {}
+components:
+  schemas:
+
+    OpportunityId:
+      type: string
+      pattern: '^opp_[0-9A-HJKMNP-TV-Z]{26}$'
+
+    OpportunityStatus:
+      type: string
+      enum: [pipeline, scoring, converted, dropped]
+
+    RegulatoryRisk:
+      type: string
+      enum: [low, medium, high]
+
+    Opportunity:
+      type: object
+      required: [opportunityId, title, status, createdAt, updatedAt]
+      properties:
+        opportunityId:
+          $ref: '#/components/schemas/OpportunityId'
+        title: { type: string, minLength: 1, maxLength: 200 }
+        partnerId: { type: string }
+        status:
+          $ref: '#/components/schemas/OpportunityStatus'
+        fitScore: { type: number, minimum: 0, maximum: 100 }
+        regulatoryRisk:
+          $ref: '#/components/schemas/RegulatoryRisk'
+        thesis: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    OpportunityCreateRequest:
+      type: object
+      required: [title, partnerId]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        partnerId: { type: string }
+        thesis: { type: string }
+
+    ScoreOpportunityRequest:
+      type: object
+      required: [fitScore, regulatoryRisk]
+      properties:
+        fitScore: { type: number, minimum: 0, maximum: 100 }
+        regulatoryRisk:
+          $ref: '#/components/schemas/RegulatoryRisk'
+
+    AdvanceOpportunityRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [scoring, converted, dropped]
+
+    OpportunityListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Opportunity'
+        nextCursor:
+          type: string
+
+    OpportunityResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Opportunity'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+    OpportunityListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/OpportunityListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+

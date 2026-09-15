@@ -1,0 +1,145 @@
+openapi: 3.1.0
+info:
+  title: Conflicts API
+  version: 0.1.0
+  description: |
+    Coopetition conflict register (BR-4).
+  license:
+    name: Proprietary
+    url: https://partnora.local/license
+  x-domain: cfl
+servers:
+  - url: https://api.partnora.local
+    description: Local / Partnora API
+security:
+  - apiKey: []
+tags:
+  - name: Conflicts
+    description: Coopetition conflict register
+paths:
+
+  /v1/conflicts:
+    get:
+      operationId: listConflicts
+      tags: [Conflicts]
+      summary: List coopetition conflicts
+
+      parameters:
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+
+        - name: dealId
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Conflicts
+          content:
+            application/json:
+              schema:
+                $ref: ./conflicts.schemas.yaml#/components/schemas/ConflictListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createConflict
+      tags: [Conflicts]
+      summary: Log a coopetition conflict
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./conflicts.schemas.yaml#/components/schemas/ConflictCreateRequest
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./conflicts.schemas.yaml#/components/schemas/ConflictResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/conflicts/{conflictId}:
+    get:
+      operationId: getConflict
+      tags: [Conflicts]
+      summary: Get conflict
+      parameters:
+        - name: conflictId
+          in: path
+          required: true
+          schema:
+            $ref: ./conflicts.schemas.yaml#/components/schemas/ConflictId
+      responses:
+        '200':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: ./conflicts.schemas.yaml#/components/schemas/ConflictResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/conflicts/{conflictId}/accept:
+    post:
+      operationId: acceptConflictMitigation
+      tags: [Conflicts]
+      summary: Accept mitigation
+      parameters:
+        - name: conflictId
+          in: path
+          required: true
+          schema:
+            $ref: ./conflicts.schemas.yaml#/components/schemas/ConflictId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: ./conflicts.schemas.yaml#/components/schemas/AcceptConflictMitigationRequest
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: ./conflicts.schemas.yaml#/components/schemas/ConflictResponse
+
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey
